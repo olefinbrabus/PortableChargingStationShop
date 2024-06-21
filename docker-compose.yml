@@ -1,24 +1,24 @@
 services:
-  shop:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: no
-    ports:
-      - "8000:8000"
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
-    depends_on:
-    - postgres
-    healthcheck:
-      test: curl --fail http://localhost:8000 || exit 1
-      interval: 10s
-      timeout: 10s
-      start_period: 10s
-      retries: 3
-    env_file:
-    - ./.env
+#  shop:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    restart: no
+#    ports:
+#      - "8000:8000"
+#    command: >
+#      sh -c "python manage.py migrate &&
+#             python manage.py runserver 0.0.0.0:8000"
+#    depends_on:
+#    - postgres
+#    healthcheck:
+#      test: curl --fail http://localhost:8000 || exit 1
+#      interval: 10s
+#      timeout: 10s
+#      start_period: 10s
+#      retries: 3
+#    env_file:
+#    - ./.env
 
   postgres:
     image: "postgres:14-alpine"
