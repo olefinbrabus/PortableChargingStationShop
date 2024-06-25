@@ -11,7 +11,8 @@ from shop.serializers import (
     OrderSerializer,
     ProductSerializer,
     ProductImageSerializer,
-    OrderRetrieveSerializer
+    OrderRetrieveSerializer,
+    ProductOrderSerializer
 )
 
 
@@ -32,3 +33,15 @@ class ProductViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset.filter(user=self.request.user)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ProductOrderViewSet(viewsets.ModelViewSet):
+    queryset = ProductOrder.objects.all()
+    serializer_class = ProductOrderSerializer

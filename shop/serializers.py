@@ -27,33 +27,32 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = ("name", "image")
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    products_in_order = ProductSerializer(many=True, read_only=True, allow_empty=False)
+class OrderRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = "__all__"
-        read_only_fields = ("created_at", "subtotal")
+
+
+class ProductOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductOrder
+        fields = ("order", "product", "price")
+        read_only_fields = ("price",)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    product_orders = ProductOrderSerializer(many=True, allow_empty=False, source='productorder_set')
+
+    class Meta:
+        model = Order
+        fields = ("product_orders", "user", "created_at")
+        read_only_fields = ("user", "created_at")
 
     def create(self, validated_data):
+        product_orders_data = validated_data.pop('product_orders')
         with transaction.atomic():
-            products = validated_data.pop('order_products')
             order = Order.objects.create(**validated_data)
-            for product_data in products:
-                ProductOrder.objects.create(order=order, **product_data)
+            for product_order_data in product_orders_data:
+                ProductOrder.objects.create(order=order, **product_order_data)
             return order
 
-
-class OrderRetrieveSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = '__all__'
-
-
-# class OrderProductSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = OrderProduct
-#         fields = (
-#             "name", "type_product", "company", "price", "capacity",
-#             "output", "cycle_life", "created_at", "image", "order"
-#         )
