@@ -23,4 +23,6 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/shop/', include('shop.urls'), name='shop'),
+    path('api/user/', include('user.urls'), name='user'),
+    path('__debug__/', include("debug_toolbar.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

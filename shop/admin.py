@@ -21,9 +21,6 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     pass
-    # fieldsets = (
-    #     (None, {'fields': ('product', 'price')}),
-    # )
 
 
 admin.site.register(Company)
