@@ -20,7 +20,7 @@ class Company(models.Model):
         return self.name
 
     class Meta:
-        verbose_name_plural = "Companies"
+        verbose_name_plural = "companies"
 
 
 class Product(models.Model):
@@ -44,6 +44,10 @@ class Product(models.Model):
             models.Index(fields=('name', 'type_product')),
             models.Index(fields=('capacity',))
         )
+
+    @property
+    def full_name(self):
+        return self.__str__()
 
     def __str__(self):
         return f"{self.company.name} {self.name}"
@@ -71,8 +75,12 @@ class Order(models.Model):
 
 class ProductOrder(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=True, null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="product_orders")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    class Meta:
+        default_related_name = "product_orders"
+        verbose_name_plural = "product orders"
 
     def save(
             self,
