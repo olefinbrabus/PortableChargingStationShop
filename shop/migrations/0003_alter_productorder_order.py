@@ -7,13 +7,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shop', '0002_alter_company_options_alter_productorder_product_and_more'),
+        ("shop", "0002_alter_company_options_alter_productorder_product_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='productorder',
-            name='order',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='product_orders', to='shop.order'),
+            model_name="productorder",
+            name="order",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="product_orders",
+                to="shop.order",
+            ),
         ),
     ]

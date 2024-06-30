@@ -5,6 +5,7 @@ from django.utils.translation import gettext
 
 class UserManager(DjangoUserManager):
     """Define a model manager for User model with no username field."""
+
     use_in_migrations = True
 
     def _create_user(self, email, password, **extra_fields):
@@ -43,9 +44,9 @@ class UserManager(DjangoUserManager):
 
 class User(AbstractUser):
     username = None
-    email = models.EmailField(gettext('email address'), unique=True)
+    email = models.EmailField(gettext("email address"), unique=True)
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
