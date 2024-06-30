@@ -8,7 +8,7 @@ from shop.models import Product, Company, Order, ProductOrder
 class CompanySerializer(serializers.ModelSerializer):
     class Meta:
         model = Company
-        fields = "name",
+        fields = ("name",)
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -17,32 +17,35 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = (
-            "name", "type_product", "company", "price", "capacity",
-            "output", "cycle_life", "created_at", "image"
+            "name",
+            "type_product",
+            "company",
+            "price",
+            "capacity",
+            "output",
+            "cycle_life",
+            "created_at",
+            "image",
         )
         validators = [
             UniqueConstraint(
-                fields=('name', 'type_product'),
-                name='unique_product_name_type'
+                fields=("name", "type_product"), name="unique_product_name_type"
             ),
         ]
 
 
 class ProductListSerializer(ProductSerializer):
+    full_name = serializers.CharField()
+
     class Meta:
         model = Product
-        fields = ('full_name', 'image')
+        fields = ("full_name", "image")
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ("name", "image")
-
-
-class OrderRetrieveSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
 
 
 class ProductOrderSerializer(serializers.ModelSerializer):
@@ -55,7 +58,10 @@ class ProductOrderSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    product_orders = ProductOrderSerializer(many=True, allow_empty=False, read_only=False)
+    product_orders = ProductOrderSerializer(
+        many=True, allow_empty=False, read_only=False
+    )
+    subtotal = serializers.FloatField()
 
     class Meta:
         model = Order
@@ -64,7 +70,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         print(validated_data)
-        product_orders_data = validated_data.pop('product_orders')
+        product_orders_data = validated_data.pop("product_orders")
 
         with transaction.atomic():
             order = Order.objects.create(**validated_data)
@@ -73,5 +79,8 @@ class OrderSerializer(serializers.ModelSerializer):
             return order
 
 
-class OrderListSerializer(OrderSerializer):
-    product_orders = ProductOrderSerializer(many=True, read_only=True,)
+class OrderListRetrieveSerializer(OrderSerializer):
+    product_orders = ProductOrderSerializer(
+        many=True,
+        read_only=True,
+    )

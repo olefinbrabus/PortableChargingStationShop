@@ -35,14 +35,15 @@ class Product(models.Model):
     image = models.ImageField(upload_to=product_image_path, null=True)
 
     class Meta:
-        ordering = ('name',)
-        constraints = [UniqueConstraint(
-            fields=('name', 'type_product'),
-            name='unique_product_name_type'
-        )]
+        ordering = ("name",)
+        constraints = [
+            UniqueConstraint(
+                fields=("name", "type_product"), name="unique_product_name_type"
+            )
+        ]
         indexes = (
-            models.Index(fields=('name', 'type_product')),
-            models.Index(fields=('capacity',))
+            models.Index(fields=("name", "type_product")),
+            models.Index(fields=("capacity",)),
         )
 
     @property
@@ -64,7 +65,7 @@ class Order(models.Model):
         if order_products.exists():
             for order_product in order_products:
                 price += order_product.price
-        return price
+        return float(price)
 
     class Meta:
         ordering = ["created_at"]
@@ -83,18 +84,11 @@ class ProductOrder(models.Model):
         verbose_name_plural = "product orders"
 
     def save(
-            self,
-            force_insert=False,
-            force_update=False,
-            using=None,
-            update_fields=None
+        self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         self.price = self.product.price
         return super(ProductOrder, self).save(
-            force_insert,
-            force_update,
-            using,
-            update_fields
+            force_insert, force_update, using, update_fields
         )
 
     def __str__(self):

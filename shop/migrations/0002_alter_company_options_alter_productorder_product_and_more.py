@@ -7,25 +7,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('shop', '0001_initial'),
+        ("shop", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='company',
-            options={'verbose_name_plural': 'Companies'},
+            name="company",
+            options={"verbose_name_plural": "Companies"},
         ),
         migrations.AlterField(
-            model_name='productorder',
-            name='product',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='product_orders', to='shop.product'),
+            model_name="productorder",
+            name="product",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="product_orders",
+                to="shop.product",
+            ),
         ),
         migrations.AddIndex(
-            model_name='product',
-            index=models.Index(fields=['name', 'type_product'], name='shop_produc_name_4c9ce6_idx'),
+            model_name="product",
+            index=models.Index(
+                fields=["name", "type_product"], name="shop_produc_name_4c9ce6_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='product',
-            index=models.Index(fields=['capacity'], name='shop_produc_capacit_277b19_idx'),
+            model_name="product",
+            index=models.Index(
+                fields=["capacity"], name="shop_produc_capacit_277b19_idx"
+            ),
         ),
     ]
