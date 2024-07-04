@@ -1,23 +1,19 @@
-from django.db.models import Count, F
-from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, status
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.response import Response
+from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 from shop.models import Company, Product, Order, ProductOrder
-from shop.permissions import permissions_read_if_anonymous
+from shop.permissions import IsAdminOrReadOnly
 from shop.serializers import (
     CompanySerializer,
     OrderSerializer,
-    OrderListRetrieveSerializer,
+    OrderRetrieveSerializer,
+    OrderListSerializer,
     ProductSerializer,
     ProductImageSerializer,
     ProductOrderSerializer,
-    ProductListSerializer,
+    ProductListSerializer, ProductRetrieveSerializer,
 )
 
 
@@ -30,24 +26,24 @@ class DefaultSetPagination(PageNumberPagination):
 class CompanyViewSet(viewsets.ModelViewSet):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
-
-    def get_permissions(self):
-        return permissions_read_if_anonymous(self)
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
+    serializer_class = ProductSerializer
     pagination_class = DefaultSetPagination
-
-    def get_permissions(self):
-        return permissions_read_if_anonymous(self)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
+        serializer_class = self.serializer_class
         if self.action == "upload_image":
-            return ProductImageSerializer
+            serializer_class = ProductImageSerializer
         elif self.action == "list":
-            return ProductListSerializer
-        return ProductSerializer
+            serializer_class = ProductListSerializer
+        elif self.action == "retrieve":
+            serializer_class = ProductRetrieveSerializer
+        return serializer_class
 
     @staticmethod
     def _params_to_ints(qs):
@@ -99,8 +95,10 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         serializer = self.serializer_class
 
-        if self.action in ("list", "retrieve"):
-            serializer = OrderListRetrieveSerializer
+        if self.action == "retrieve":
+            serializer = OrderRetrieveSerializer
+        elif self.action == "list":
+            serializer = OrderListSerializer
         return serializer
 
     @extend_schema(
@@ -119,3 +117,5 @@ class OrderViewSet(viewsets.ModelViewSet):
 class ProductOrderViewSet(viewsets.ModelViewSet):
     queryset = ProductOrder.objects.all()
     serializer_class = ProductOrderSerializer
+    pagination_class = DefaultSetPagination
+    permission_classes = (IsAuthenticated,)

@@ -21,6 +21,7 @@ class Company(models.Model):
 
     class Meta:
         verbose_name_plural = "companies"
+        ordering = ("name",)
 
 
 class Product(models.Model):
@@ -68,7 +69,7 @@ class Order(models.Model):
         return float(price)
 
     class Meta:
-        ordering = ["created_at"]
+        ordering = ("created_at",)
 
     def __str__(self):
         return f"{self.created_at} {self.user.email}"
@@ -76,12 +77,13 @@ class Order(models.Model):
 
 class ProductOrder(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, blank=True, null=True)
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, blank=True)
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
     class Meta:
         default_related_name = "product_orders"
         verbose_name_plural = "product orders"
+        ordering = ("order",)
 
     def save(
         self, force_insert=False, force_update=False, using=None, update_fields=None

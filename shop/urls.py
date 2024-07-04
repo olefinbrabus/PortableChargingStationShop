@@ -11,3 +11,5 @@ router.register(r"orders", OrderViewSet)
 router.register(r"product_orders", ProductOrderViewSet)
 
 urlpatterns = [path("", include(router.urls))]
+
+app_name = "shop"

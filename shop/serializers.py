@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.db.models import UniqueConstraint
 from rest_framework import serializers
 
 from shop.models import Product, Company, Order, ProductOrder
@@ -12,7 +11,6 @@ class CompanySerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    company = CompanySerializer(read_only=True)
 
     class Meta:
         model = Product
@@ -27,11 +25,6 @@ class ProductSerializer(serializers.ModelSerializer):
             "created_at",
             "image",
         )
-        validators = [
-            UniqueConstraint(
-                fields=("name", "type_product"), name="unique_product_name_type"
-            ),
-        ]
 
 
 class ProductListSerializer(ProductSerializer):
@@ -39,7 +32,15 @@ class ProductListSerializer(ProductSerializer):
 
     class Meta:
         model = Product
-        fields = ("full_name", "image")
+        fields = (
+            "full_name",
+            "price",
+            "image",
+        )
+
+
+class ProductRetrieveSerializer(ProductSerializer):
+    company = CompanySerializer(read_only=True)
 
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -49,7 +50,6 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class ProductOrderSerializer(serializers.ModelSerializer):
-    product = ProductListSerializer(read_only=True)
 
     class Meta:
         model = ProductOrder
@@ -57,16 +57,24 @@ class ProductOrderSerializer(serializers.ModelSerializer):
         read_only_fields = ("price",)
 
 
+class ProductOrderListSerializer(ProductOrderSerializer):
+    product = ProductListSerializer(read_only=True)
+
+    class Meta:
+        model = ProductOrder
+        fields = ("product", "price")
+        read_only_fields = ("price",)
+
+
 class OrderSerializer(serializers.ModelSerializer):
     product_orders = ProductOrderSerializer(
-        many=True, allow_empty=False, read_only=False
-    )
-    subtotal = serializers.FloatField()
+        many=True, allow_empty=False)
+    subtotal = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Order
         fields = ("created_at", "subtotal", "product_orders")
-        read_only_fields = ("created_at",)
+        read_only_fields = ("created_at", "subtotal")
 
     def create(self, validated_data):
         print(validated_data)
@@ -79,8 +87,12 @@ class OrderSerializer(serializers.ModelSerializer):
             return order
 
 
-class OrderListRetrieveSerializer(OrderSerializer):
+class OrderRetrieveSerializer(OrderSerializer):
     product_orders = ProductOrderSerializer(
         many=True,
         read_only=True,
     )
+
+
+class OrderListSerializer(OrderSerializer):
+    product_orders = ProductOrderListSerializer(many=True)

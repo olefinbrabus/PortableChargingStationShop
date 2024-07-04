@@ -10,10 +10,6 @@ class IsAdminAllOrIsAuthenticatedOrReadOnly(permissions.BasePermission):
         ) or bool(request.user.is_staff)
 
 
-def permissions_read_if_anonymous(self):
-    permission_classes = self.permission_classes
-
-    if self.action in ("list", "retrieve"):
-        permission_classes = {}
-
-    return permission_classes
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.method in permissions.SAFE_METHODS or request.user.is_staff)
