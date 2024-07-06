@@ -13,7 +13,8 @@ from shop.serializers import (
     ProductSerializer,
     ProductImageSerializer,
     ProductOrderSerializer,
-    ProductListSerializer, ProductRetrieveSerializer,
+    ProductListSerializer,
+    ProductRetrieveSerializer,
 )
 
 

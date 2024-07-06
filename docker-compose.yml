@@ -1,40 +1,99 @@
 services:
-#  shop:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    restart: no
-#    ports:
-#      - "8000:8000"
-#    command: >
-#      sh -c "python manage.py migrate &&
-#             python manage.py runserver 0.0.0.0:8000"
-#    depends_on:
-#    - postgres
-#    healthcheck:
-#      test: curl --fail http://localhost:8000 || exit 1
-#      interval: 10s
-#      timeout: 10s
-#      start_period: 10s
-#      retries: 3
-#    env_file:
-#    - ./.env
+  shop:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: no
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+    - postgres
+    healthcheck:
+      test: curl --fail http://localhost:8000/api/shop/products/ || exit 1
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    env_file:
+    - ./.env
 
   postgres:
     image: "postgres:14-alpine"
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=User
-      - POSTGRES_PASSWORD=Password
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=db
     env_file:
       - ./.env
     volumes:
       - ./database-data:/var/lib/postgresql/data
 
-  redis:
-    image: "redis:latest"
-    restart: "always"
+  rabbitmq:
+    image: rabbitmq:3.10.7-management
+    hostname: rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
     ports:
-      - "6379:6379"
+      - "5672:5672"
+    env_file:
+      - ./.env
+    restart: always
+    volumes:
+      - ./broker:/rabbitmq
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "celery -A portable_charging_station_shop worker -l info"
+    depends_on:
+      - postgres
+      - rabbitmq
+      - shop
+    environment:
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672//
+    env_file:
+      - ./.env
+    volumes:
+      - ./broker:/celery
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "celery -A portable_charging_station_shop beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+    environment:
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672//
+    depends_on:
+      - shop
+      - rabbitmq
+      - postgres
+      - celery
+    restart: on-failure
+    volumes:
+      - ./broker:/celery-beat
+
+  flower:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: "celery -A portable_charging_station_shop flower --address=0.0.0.0"
+    environment:
+      - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=rpc://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672//
+
+    ports:
+      - "5555:5555"
+    depends_on:
+      - celery
+    env_file:
+      - ./.env
+    restart: on-failure

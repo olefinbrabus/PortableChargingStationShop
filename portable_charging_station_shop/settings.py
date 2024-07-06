@@ -9,12 +9,13 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
+
 from dotenv import dotenv_values
 
-ENV_VALUES = dotenv_values()
+ENV_VALUES = defaultdict(None, dotenv_values())
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "django_celery_beat",
     "drf_spectacular",
     "shop",
     "user",
@@ -91,7 +93,7 @@ DATABASES = {
         "NAME": "postgres",
         "USER": ENV_VALUES["POSTGRES_USER"] or "User",
         "PASSWORD": ENV_VALUES["POSTGRES_PASSWORD"] or "Password",
-        "HOST": "localhost",  # if local start change to localhost if docker change to docker image name
+        "HOST": "postgres",  # if local start change to localhost if docker change to docker image name
         "PORT": "5432",
     }
 }
@@ -166,3 +168,11 @@ SIMPLE_JWT = {
 }
 
 DEBUG_TOOLBAR_CONFIG = {"IS_RUNNING_TESTS": False}
+
+RABBITMQ_URL = f"{ENV_VALUES['RABBITMQ_USER']}:{ENV_VALUES["RABBITMQ_PASSWORD"]}@localhost//"
+
+CELERY_BROKER_URL = f"pyamqp://{RABBITMQ_URL}"
+CELERY_RESULT_BACKEND = f"rpc://{RABBITMQ_URL}"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
