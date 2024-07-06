@@ -2,7 +2,7 @@ import pathlib
 from uuid import uuid4
 
 from django.db import models
-from django.db.models import indexes, UniqueConstraint
+from django.db.models import UniqueConstraint
 from django.utils.text import slugify
 
 from user.models import User
