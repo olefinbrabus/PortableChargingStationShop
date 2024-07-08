@@ -3,14 +3,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: no
+    restart: always
     ports:
       - "8000:8000"
-    command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate &&
+                    gunicorn --bind 0.0.0.0:8000 portable_charging_station_shop.wsgi"
     depends_on:
-    - postgres
+      - postgres
     healthcheck:
       test: curl --fail http://localhost:8000/api/shop/products/ || exit 1
       interval: 30s
@@ -18,7 +17,10 @@ services:
       start_period: 10s
       retries: 3
     env_file:
-    - ./.env
+      - ./.env
+    volumes:
+      - ./media:/upload/products
+      - ./static:/static
 
   postgres:
     image: "postgres:14-alpine"
@@ -33,8 +35,16 @@ services:
     volumes:
       - ./database-data:/var/lib/postgresql/data
 
+  nginx:
+    build: ./nginx
+    depends_on:
+      - shop
+      - postgres
+    ports:
+      - "80:80"
+
   rabbitmq:
-    image: rabbitmq:3.10.7-management
+    image: "rabbitmq:3.10.7-management"
     hostname: rabbitmq
     environment:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}

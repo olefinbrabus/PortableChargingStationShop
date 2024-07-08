@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+
 from collections import defaultdict
 from datetime import timedelta
 from pathlib import Path
@@ -29,7 +30,13 @@ SECRET_KEY = ENV_VALUES["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "0.0.0.0", "django"]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://django'
+]
 
 INTERNAL_IPS = ["127.0.0.1", "localhost", "0.0.0.0"]
 
@@ -132,6 +139,8 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+STATIC_ROOT = BASE_DIR / "static"
+
 MEDIA_ROOT = BASE_DIR / "media"
 
 MEDIA_URL = "/media/"
@@ -169,7 +178,9 @@ SIMPLE_JWT = {
 
 DEBUG_TOOLBAR_CONFIG = {"IS_RUNNING_TESTS": False}
 
-RABBITMQ_URL = f"{ENV_VALUES['RABBITMQ_USER']}:{ENV_VALUES["RABBITMQ_PASSWORD"]}@localhost//"
+RABBITMQ_URL = (
+    f"{ENV_VALUES['RABBITMQ_USER']}:{ENV_VALUES["RABBITMQ_PASSWORD"]}@localhost//"
+)
 
 CELERY_BROKER_URL = f"pyamqp://{RABBITMQ_URL}"
 CELERY_RESULT_BACKEND = f"rpc://{RABBITMQ_URL}"

@@ -20,9 +20,7 @@ ORDERS_URL = reverse("shop:order-list")
 
 def sample_product(**kwargs) -> Product:
     company = Company.objects.create(
-        name=kwargs.pop(
-            "name_company",
-            f"Test Company{len(Company.objects.all()) + 1}")
+        name=kwargs.pop("name_company", f"Test Company{len(Company.objects.all()) + 1}")
     )
 
     defaults = {
@@ -138,17 +136,6 @@ class AuthenticationShopApiTestCase(TestCase):
 
         response = self.client.post(PRODUCTS_URL, payload)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_order_product_order_created(self):
-        product = sample_product()
-
-        payload = {
-            "product_orders": [product.id]
-        }
-        response = self.client.post(ORDERS_URL, payload)
-        print(response.data)
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_order_product_order_created_checked(self):
         product = sample_product()
