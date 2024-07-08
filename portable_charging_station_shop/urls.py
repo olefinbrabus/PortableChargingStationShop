@@ -18,6 +18,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import path, include
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -39,4 +40,4 @@ urlpatterns = [
     path(
         "api/doc/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
     ),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + staticfiles_urlpatterns()

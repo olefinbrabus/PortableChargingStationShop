@@ -67,8 +67,7 @@ class ProductOrderListSerializer(ProductOrderSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    product_orders = ProductOrderSerializer(
-        many=True, allow_empty=False)
+    product_orders = ProductOrderSerializer(many=True, allow_empty=False)
     subtotal = serializers.FloatField(read_only=True)
 
     class Meta:
